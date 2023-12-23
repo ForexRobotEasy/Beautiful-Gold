@@ -1,0 +1,95 @@
+
+// Developer: Forex Robot Easy Team
+// Site: forexroboteasy.com
+
+// Include necessary libraries
+#include <Trade\Trade.mqh>
+#include <ChartObjects\ChartObjects.mqh>
+#include <Arrays\ArrayObj.mqh>
+
+// Define constants
+#define TP_DISTANCE 50 // Take Profit distance in points
+#define SL_DISTANCE 30 // Stop Loss distance in points
+#define LOT_SIZE 0.01 // Lot size for trading
+
+// Declare global variables
+CTrade trade;
+CArrayObj trendArray;
+bool isBuySignal = false;
+bool isSellSignal = false;
+
+// Initialize function
+int OnInit()
+{
+    // Add chart objects for visual representation
+    CChartObjectText *textObject = new CChartObjectText();
+    textObject.Create(0, 'Trading Signals', 0, 0);
+    textObject.FontSize(12);
+    textObject.Color(Red);
+
+    // Add trend array for market analysis
+    trendArray.Resize(0);
+
+    return(INIT_SUCCEEDED);
+}
+
+// Deinitialize function
+void OnDeinit(const int reason)
+{
+    // Clean up chart objects
+    ObjectDelete(0, 'Trading Signals');
+
+    // Clean up trend array
+    trendArray.Clear();
+}
+
+// Main function for algorithm execution
+void OnTick()
+{
+    // Analyze market trends and generate trading signals
+    double currentPrice = SymbolInfoDouble(_Symbol, SYMBOL_BID);
+    double previousPrice = trendArray.Last();
+
+    if (currentPrice > previousPrice)
+    {
+        isBuySignal = true;
+        isSellSignal = false;
+    }
+    else if (currentPrice < previousPrice)
+    {
+        isBuySignal = false;
+        isSellSignal = true;
+    }
+
+    // Execute trades based on generated signals
+    if (isBuySignal)
+    {
+        trade.Buy(LOT_SIZE, _Symbol, currentPrice, currentPrice + TP_DISTANCE * _Point, currentPrice - SL_DISTANCE * _Point);
+    }
+    else if (isSellSignal)
+    {
+        trade.Sell(LOT_SIZE, _Symbol, currentPrice, currentPrice - TP_DISTANCE * _Point, currentPrice + SL_DISTANCE * _Point);
+    }
+
+    // Update trend array
+    trendArray.Insert(currentPrice, 0);
+
+    // Update chart object
+    ObjectSetText(0, 'Trading Signals: ' + (isBuySignal ? 'Buy' : (isSellSignal ? 'Sell' : 'None')));
+}
+
+// Additional functions for user interface and features
+// ...
+
+// Logical conclusion of the code
+void Conclusion()
+{
+    // Print completion message
+    Print('Beautiful Gold program executed successfully!');
+
+    // Display completion message on chart
+    CChartObjectText *completionText = new CChartObjectText();
+    completionText.Create(0, 'Program Completed', 0, 20);
+    completionText.FontSize(12);
+    completionText.Color(Green);
+}
